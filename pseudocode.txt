@@ -1,0 +1,43 @@
+1) Define Constants
+
+2) Define Variables
+
+3) Generate Game Board HTML
+-- Game board is complex so we will generate it dynamically
+
+4) Assign HTML elements to variables
+
+5) Initialize State
+
+  5a) Get input from player to place player's ships? (Or generate at random)
+  -- Ships can't overlap
+
+  5b) Generate computer's ships
+  -- Ships still can't overlap
+
+6) Render Game Board
+
+7) Wait For Player Input
+
+  7a) Determine if 'hit' or 'miss'
+
+  7b) If 'hit', determine if 'ship sunk'
+  -- Message?
+
+  7c) If 'ship sunk', determine if 'game over'
+
+    7c-1) If 'game over', log 'player' as 'winner'
+
+    7c-2) Go to 'Display Winner'
+
+  7d) Select computer move
+  -- Re-render game board before selecting computer move?
+
+  7e) Repeat steps 7a-7c for computer.
+
+  7f) Go to (6).
+
+8) Display Winner
+-- Pop up a message that says "[Player|Computer] Is The Winner. Play Again?"
+
+9) If "Play Again", go to (5)
