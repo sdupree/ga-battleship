@@ -64,12 +64,56 @@ body {
   align-items: center;
 }
 
+.ship-left {
+  border-top: 3px #333 solid;
+  border-left: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-lr-mid {
+  border-top: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-right {
+  border-top: 3px #333 solid;
+  border-right: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-top {
+  border-top: 3px #333 solid;
+  border-left: 3px #333 solid;
+  border-right: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-tb-mid {
+  border-left: 3px #333 solid;
+  border-right: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-bottom {
+  border-left: 3px #333 solid;
+  border-right: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
 .peg-hole {
   height: 1.4vh;
   width: 1.4vh;
   background-color: rgb(13, 0, 190);
   border-radius: 50%;
   display: inline-block;
+}
+
+.in-ship {
+  background-color: #333;
 }
 
 .peg {
@@ -91,47 +135,4 @@ body {
   background-color: grey;
   border: 3px solid black;
   position: absolute;
-}
-
-.carrier {
-  height: 23vh;
-  width: 4vh;
-  left: 18vh;
-  top: 70.5vh;
-  writing-mode: vertical-rl;
-}
-
-.battleship {
-  height: 18vh;
-  width: 4vh;
-  left: 25vh;
-  top: 70.5vh;
-  writing-mode: vertical-rl;
-}
-
-.cruiser {
-  height: 13vh;
-  width: 4vh;
-  left: 35vh;
-  top: 70.5vh;
-  writing-mode: vertical-rl;
-
-}
-
-.submarine {
-  height: 13vh;
-  width: 4vh;
-  left: 60vh;
-  top: 70.5vh;
-  writing-mode: vertical-rl;
-
-}
-
-.destroyer {
-  height: 8vh;
-  width: 4vh;
-  left: 85vh;
-  top: 70.5vh;
-  writing-mode: vertical-rl;
-
 }

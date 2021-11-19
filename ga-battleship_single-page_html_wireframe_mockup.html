@@ -1,11 +1,121 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>GA Battleship</title>
+  <title>GA Battleship - HTML Wireframe Mockup</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width">
-  <link href="battleship.css" rel="stylesheet" type="text/css" />
-  <script defer src="battleship.js"></script>
+  <style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Helvetica;
+  text-align: center;
+  display: grid;
+  grid-template-rows: 1fr 1fr;
+  gap: 5px;
+  height: 100vh;
+  width: 56.25vh;
+}
+
+.flex-ctr {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.game-board {
+  border: 10px solid red;
+  background-color: rgb(13, 0, 190);
+  display: grid;
+  grid-template-rows: repeat(10, 1fr);
+  grid-template-columns: repeat(10, 1fr);
+  gap: 2px;
+}
+
+.board-square {
+  background-color: blue;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.ship-left {
+  border-top: 3px #333 solid;
+  border-left: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-lr-mid {
+  border-top: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-right {
+  border-top: 3px #333 solid;
+  border-right: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-top {
+  border-top: 3px #333 solid;
+  border-left: 3px #333 solid;
+  border-right: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-tb-mid {
+  border-left: 3px #333 solid;
+  border-right: 3px #333 solid;
+  background-color: grey;
+}
+
+.ship-bottom {
+  border-left: 3px #333 solid;
+  border-right: 3px #333 solid;
+  border-bottom: 3px #333 solid;
+  background-color: grey;
+}
+
+.peg-hole {
+  height: 1.4vh;
+  width: 1.4vh;
+  background-color: rgb(13, 0, 190);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.in-ship {
+  background-color: #333;
+}
+
+.peg {
+  height: 2vh;
+  width: 2vh;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.white-peg {
+  background-color: #fff;
+}
+
+.red-peg {
+  background-color: #f00;
+}
+
+.ship {
+  background-color: grey;
+  border: 3px solid black;
+  position: absolute;
+}
+  </style>
 </head>
 <body>
   <div class="flex-ctr game-board">
@@ -32,18 +142,4 @@
     <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg white-peg"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square ship-bottom"><span class="peg-hole in-ship"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg white-peg"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg white-peg"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
     <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
   </div>
-  <!-- <div class="flex-ctr game-board">
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg white-peg"></span></div><div class="board-square"><span class="peg red-peg"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-    <div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div><div class="board-square"><span class="peg-hole"></span></div>
-  </div> -->
-
-
 </body>
