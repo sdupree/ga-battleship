@@ -24,14 +24,25 @@ body {
   align-items: center;
 }
 
-.game-board {
+/* .game-board {
   border: 10px solid red;
   background-color: rgb(13, 0, 190);
   display: grid;
   grid-template-rows: repeat(10, 1fr);
   grid-template-columns: repeat(10, 1fr);
   gap: 2px;
+} */
+
+.game-board {
+  /* border: 10px solid red; */
+  border: 3px solid black;
+  background-color: rgb(13, 0, 190);
+  display: grid;
+  grid-template-rows: repeat(12, 1fr);
+  grid-template-columns: repeat(12, 1fr);
+  gap: 2px;
 }
+
 
 /* .game-board-border {
   padding: 10px;
@@ -55,6 +66,14 @@ body {
 .board-border-bottom {
   grid-column: 2 / 12;
 } */
+
+.board-border-square {
+  background-color: #f40;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}  
 
 .board-square {
   background-color: blue;
@@ -105,8 +124,8 @@ body {
 }
 
 .peg-hole {
-  height: 1.4vh;
-  width: 1.4vh;
+  height: 1.2vh;
+  width: 1.2vh;
   background-color: rgb(13, 0, 190);
   border-radius: 50%;
   display: inline-block;
@@ -120,15 +139,18 @@ body {
   height: 2vh;
   width: 2vh;
   border-radius: 50%;
+  /* border: 2px solid; */
   display: inline-block;
 }
 
 .white-peg {
   background-color: #fff;
+  /* border-color: #aaa; */
 }
 
 .red-peg {
-  background-color: #f00;
+  background-color: #e00;
+  /* border-color: #900; */
 }
 
 .ship {
