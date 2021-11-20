@@ -83,6 +83,10 @@ body {
   align-items: center;
 }
 
+.board-square:hover {
+  border: 2px solid #0f0;
+}
+
 .ship-left {
   border-top: 3px #333 solid;
   border-left: 3px #333 solid;

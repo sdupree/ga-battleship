@@ -19,23 +19,41 @@
 
 7) Wait For Player Input
 
-  7a) Determine if 'hit' or 'miss'
+  7a) Phase I: Place Ships
 
-  7b) If 'hit', determine if 'ship sunk'
-  -- Message?
+    7a-1) Player is told which ship to place.
+    -- Make selectable?
+    -- We'll use renderShip() a whole lot, but probably outside our main render().
 
-  7c) If 'ship sunk', determine if 'game over'
+    7a-2) As player moves mouse around board, ship is depicted in horizontal position.
 
-    7c-1) If 'game over', log 'player' as 'winner'
+    7a-3) Player clicks a board square. Ship is temporarily placed.
 
-    7c-2) Go to 'Display Winner'
+    7a-4) Player moves to another board square. Ship is depicted changing alignment/position for applicable positions. Ship border color changes for "permissible" and "not permissible" positions. Position must be permissible before passing this step.
 
-  7d) Select computer move
-  -- Re-render game board before selecting computer move?
+    7a-5) Player clicks an appropriate square. Ship position is recorded.
 
-  7e) Repeat steps 7a-7c for computer.
+    7a-6) Return to 7a-1 and select next ship.
 
-  7f) Go to (6).
+  7b) Phase II: Play Game
+
+    7b-1) Determine if 'hit' or 'miss'
+
+    7b-2) If 'hit', determine if 'ship sunk'
+    -- Message?
+
+    7b-3) If 'ship sunk', determine if 'game over'
+
+      7b-3a) If 'game over', log 'player' as 'winner'
+
+      7b-3b) Go to 'Display Winner'
+
+    7b-4) Select computer move
+    -- Re-render game board before selecting computer move?
+
+    7b-5) Repeat steps 7a-7c for computer.
+
+    7b-6) Go to (6) -- Render.
 
 8) Display Winner
 -- Pop up a message that says "[Player|Computer] Is The Winner. Play Again?"

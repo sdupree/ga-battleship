@@ -1,6 +1,22 @@
-// The 5 ships are: Carrier (occupies 5 spaces), Battleship (4), Cruiser (3), Submarine (3), and Destroyer (2).
-
 /*----- Constants -----*/
+// The 5 ships are: Carrier (occupies 5 spaces), Battleship (4), Cruiser (3), Submarine (3), and Destroyer (2).
+const ships = {
+  carrier: {
+    squares: 5
+  },
+  battleship: {
+    squares: 4
+  },
+  cruiser: {
+    squares: 3
+  },
+  submarine: {
+    squares: 3
+  },
+  destroyer: {
+    squares: 2
+  }
+};
 
 
 /*----- Variables -----*/
@@ -59,4 +75,10 @@ function generateBoardHTML() {
   }
 
   return boardHtml;
+}
+
+function renderShip(ship, topLeft, whichBoard, borderColor) {
+  // Could do better than "borderColor"...
+  // Select grid squares
+  // Modify CSS
 }
