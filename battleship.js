@@ -20,7 +20,7 @@ const ships = {
 
 
 /*----- Variables -----*/
-let board, winner, boardPositions;
+let player1_board, player2_board, player1_ships, player2_ships, winner, boardPositions;
 
 
 /*----- Cached Element References -----*/
@@ -33,14 +33,48 @@ let board, winner, boardPositions;
 init();
 
 function init() {
-  console.log('hello');
-  document.querySelector('#computer-board').innerHTML = generateBoardHTML();
-  document.querySelector('#player-board').innerHTML = generateBoardHTML();
+  // Populate "boardPositions" array.
+  generateBoardPositions();
+
+  player1_board = [];
+  player2_board = [];
+
+  // Instantiate game boards.
+  [player1_board, player2_board].forEach(function(which_board) {
+    boardPositions.forEach(function(pos) {
+      which_board[pos] = null;
+    });
+  });
+  
+  // Construct game board HTML.
+  document.querySelector('#player1-board').innerHTML = generateBoardHTML('p1');
+  document.querySelector('#player2-board').innerHTML = generateBoardHTML('p2');
+
+  // Make random pegs (optional)
+  ['p1', 'p2'].forEach(function(which_board) {
+    boardPositions.forEach(function(pos) {
+      let div = document.getElementById(`${which_board}-${pos}`);
+      let span = div.querySelector('span');
+      if(Math.floor(Math.random() * 7) % 7 == 0) {
+        if(Math.floor(Math.random() * 7) % 7 == 0) {
+          span.classList.add('peg', 'red-peg');
+          // div.classList.remove('peg-hole');
+        } else {
+          span.classList.add('peg', 'white-peg');
+          // div.classList.remove('peg-hole');
+        }
+      }
+    });
+  });
+
+
+  // Initialize "winner".
+  winner = undefined;
 }
 
 // generateBoardPositions populates our array of name-friendly board spaces with e.g. "A1" - "J10".
 function generateBoardPositions() {
-  boardPositions = [];  // Just in case.
+  boardPositions = [];  // Make array empty, just in case.
 
   for(let i = 0; i < 10; i++) {
     for(let j = 0; j < 10; j++) {
@@ -50,9 +84,8 @@ function generateBoardPositions() {
   // return boardPositions;
 }
 
-function generateBoardHTML() {
+function generateBoardHTML(player) {
   let boardHtml = '';
-
 
   // Generate top row.
   boardHtml += '<div class="board-border-square"></div>';
@@ -64,29 +97,12 @@ function generateBoardHTML() {
   boardHtml += '\n';
 
   // Generate middle 10 rows.
-  // For now:
-  for(let i = 0; i < 10; i++) {
-    boardHtml += '<div class="board-border-square">' + String.fromCharCode(65 + i) + '</div>';
-    for(let j = 0; j < 10; j++) {
-      if(Math.floor(Math.random() * 7) % 7 == 0) {
-        if(Math.floor(Math.random() * 7) % 7 == 0) {
-          boardHtml += `<div class="board-square" id="${String.fromCharCode(i + 65) + (j + 1)}"><span class="peg red-peg"></span></div>`;
-        } else {
-          boardHtml += `<div class="board-square" id="${String.fromCharCode(i + 65) + (j + 1)}"><span class="peg white-peg"></span></div>`;
-        }
-      } else {
-        boardHtml += `<div class="board-square" id="${String.fromCharCode(i + 65) + (j + 1)}"><span class="peg-hole"></span></div>`;
-      }
-      // boardHtml += `<div class="board-square" id="${String.fromCharCode(i + 65) + (j + 1)}"><span class="peg-hole"></span></div>`;
-    }
-    boardHtml += '<div class="board-border-square"></div>\n';
-  }
-
-  // For later (not quite ready):
-  // boardPositions.forEach(function(pos, idx) {
-  //   boardHtml += `<div class="board-square" id="pos"><span class="peg red-peg"></span></div>`;
-  //   if(idx % 10 === 0) { boardHtml += '\n'; }
-  // }
+  boardPositions.forEach(function(pos, idx) {
+    console.log(pos);
+    if(idx % 10 === 0) { boardHtml += '<div class="board-border-square">' + pos.charAt() + '</div>'; }
+    boardHtml += `<div class="board-square" id="${player}-${pos}"><span class="peg-hole"></span></div>`;
+    if(idx % 10 === 9) { boardHtml += '<div class="board-border-square"></div>\n'; }
+  });
 
 
   // Footer.
@@ -97,8 +113,50 @@ function generateBoardHTML() {
   return boardHtml;
 }
 
+function render() {
+  // First render board (hits/misses)
+  // Then render ships
+  // Then render messages (or is messaging separate?)
+}
+
 function renderShip(ship, topLeft, whichBoard, borderColor) {
-  // Could do better than "borderColor"...
-  // Select grid squares
-  // Modify CSS
+  topLeft = 'A1';
+  let targetGridSquare = topLeft;
+  let shipLength = 3;
+
+  let targetDiv = document.getElementById(targetGridSquare);
+  targetDiv.classList.add('ship-left');
+  targetGridSquare = gridAdd(targetGridSquare, 'col');
+
+  for(i = 0; i < shipLength - 2; i++) {
+    let targetDiv = document.getElementById(targetGridSquare);
+    targetDiv.classList.add('ship-lr-mid');
+    targetGridSquare = gridAdd(targetGridSquare, 'col');
+  }
+  targetDiv = document.getElementById(targetGridSquare);
+  targetDiv.classList.add('ship-right');
+
+}
+
+function gridAdd(pos, dir) {
+  // Add 1 position to the 'row' or 'column' of the grid square we were passed, and return it.
+  let row = pos.substring(0, 1);
+  let col = pos.substring(1);
+
+  if(dir === 'row') { row = String.fromCharCode(row.charCodeAt() + 1); }
+  else if(dir === 'col') { col = parseInt(col) + 1; }
+  else { return undefined; }
+
+  return `${row}${col}`;
+}
+
+function withinBounds(pos) {
+  // Return 'false' if 'row' > 'J' or if 'col' > '10', else return true.
+  const row = pos.substring(0, 1);
+  const col = pos.substring(1);
+
+  if(row.charCodeAt() - 65 > 9) { return false; }
+  if(parseInt(col) > 10) { return false; }
+
+  return true;
 }
