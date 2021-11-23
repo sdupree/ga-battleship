@@ -127,6 +127,87 @@ body {
   background-color: grey;
 }
 
+.ship-deploying-left {
+  border-top: 3px #333 dashed;
+  border-left: 3px #333 dashed;
+  border-bottom: 3px #333 dashed;
+  background-color: grey;
+}
+
+.ship-deploying-lr-mid {
+  border-top: 3px #333 dashed;
+  border-bottom: 3px #333 dashed;
+  background-color: grey;
+}
+
+.ship-deploying-right {
+  border-top: 3px #333 dashed;
+  border-right: 3px #333 dashed;
+  border-bottom: 3px #333 dashed;
+  background-color: grey;
+}
+
+.ship-deploying-top {
+  border-top: 3px #333 dashed;
+  border-left: 3px #333 dashed;
+  border-right: 3px #333 dashed;
+  background-color: grey;
+}
+
+.ship-deploying-tb-mid {
+  border-left: 3px #333 dashed;
+  border-right: 3px #333 dashed;
+  background-color: grey;
+}
+
+.ship-deploying-bottom {
+  border-left: 3px #333 dashed;
+  border-right: 3px #333 dashed;
+  border-bottom: 3px #333 dashed;
+  background-color: grey;
+}
+
+.ship-collision-left {
+  border-top: 3px #f00 dashed;
+  border-left: 3px #f00 dashed;
+  border-bottom: 3px #f00 dashed;
+  background-color: grey;
+}
+
+.ship-collision-lr-mid {
+  border-top: 3px #f00 dashed;
+  border-bottom: 3px #f00 dashed;
+  background-color: grey;
+}
+
+.ship-collision-right {
+  border-top: 3px #f00 dashed;
+  border-right: 3px #f00 dashed;
+  border-bottom: 3px #f00 dashed;
+  background-color: grey;
+}
+
+.ship-collision-top {
+  border-top: 3px #f00 dashed;
+  border-left: 3px #f00 dashed;
+  border-right: 3px #f00 dashed;
+  background-color: grey;
+}
+
+.ship-collision-tb-mid {
+  border-left: 3px #f00 dashed;
+  border-right: 3px #f00 dashed;
+  background-color: grey;
+}
+
+.ship-collision-bottom {
+  border-left: 3px #f00 dashed;
+  border-right: 3px #f00 dashed;
+  border-bottom: 3px #f00 dashed;
+  background-color: grey;
+}
+
+
 .peg-hole {
   height: 1.2vh;
   width: 1.2vh;

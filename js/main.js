@@ -54,7 +54,9 @@ function init() {
     // Initialize player's ships.
     for(const ship in ships) {
       player.ships[ship] = ships[ship];
-      player.ships[ship].isSunk = false;
+      player.ships[ship].sunk = false;
+      player.ships[ship].deploying = false;
+      player.ships[ship].delpoyed = false;
       player.ships[ship].topLeft = undefined;
       player.ships[ship].orientation = undefined;
     }
@@ -85,6 +87,9 @@ function init() {
 
   // Initialize "winner".
   winner = undefined;
+
+  // Set playMode to "place-ships".
+  playMode = "place-ships";
 }
 
 // generateBoardPositions populates our array of name-friendly board spaces with e.g. "A1" - "J10".
@@ -157,61 +162,80 @@ function render() {
       }
     }
 
-    // Then render ships
-    let state = '';
     for(ship in player.ships) {
+      // Some fake ship data for testing:
       if(ship === 'carrier') {
         player.ships[ship].topLeft = 'A1';
         player.ships[ship].orientation = 'ver';
+        player.ships[ship].deployed = true;
       }
       else if(ship === 'battleship') {
         player.ships[ship].topLeft = 'C4';
         player.ships[ship].orientation = 'hor';
+        player.ships[ship].deployed = true;
       }
-      else if(ship === 'cruiser') { player.ships[ship].topLeft = 'E3'; }
+      else if(ship === 'cruiser') {
+        player.ships[ship].topLeft = 'E1';
+        player.ships[ship].deploying = true;
+      }
       else if(ship === 'submarine') {
         player.ships[ship].topLeft = 'G9';
         player.ships[ship].orientation = 'ver';
+        player.ships[ship].deployed = true;
       }
-      else if(ship === 'destroyer') { player.ships[ship].topLeft = 'I6'; }
-
-      renderShip(player.ships[ship], player.id, state);
+      else if(ship === 'destroyer') {
+        player.ships[ship].topLeft = 'I6';
+        player.ships[ship].orientation = 'hor';
+        player.ships[ship].deployed = true;
+      }
+      
+      // Then render ships
+      renderShip(player.ships[ship], player);
     }
   });
+
+  // Manage event listeners (dependent on state)
 
   // Then render messages (or is messaging separate?)
 
 }
 
-function renderShip(ship, playerID, borderColor) {
+function renderShip(ship, player) {
   let targetGridSquare = ship.topLeft;
   let shipLength = ship.squares;
   let direction = ship.orientation === 'ver' ? 'row' : 'col';
+  let borderModifier = '';
 
-  let targetDiv = document.getElementById(`${playerID}-${targetGridSquare}`);
+  // Detect collisions.
+  if(ship.deploying) {
+    borderModifier = 'deploying-';
+    if(detectCollision(player, ship)) borderModifier = 'collision-';
+  }
+
+  let targetDiv = document.getElementById(`${player.id}-${targetGridSquare}`);
   let targetSpan = targetDiv.querySelector('span');
-  targetDiv.classList.add(ship.orientation === 'ver' ? 'ship-top' : 'ship-left');
+  targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}top` : `ship-${borderModifier}left`);
   targetSpan.classList.add('in-ship');
   targetGridSquare = gridAdd(targetGridSquare, direction);
 
   for(i = 0; i < shipLength - 2; i++) {
-    let targetDiv = document.getElementById(`${playerID}-${targetGridSquare}`);
+    let targetDiv = document.getElementById(`${player.id}-${targetGridSquare}`);
     let targetSpan = targetDiv.querySelector('span');
-    targetDiv.classList.add(ship.orientation === 'ver' ? 'ship-tb-mid' : 'ship-lr-mid');
+    targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}tb-mid` : `ship-${borderModifier}lr-mid`);
     targetSpan.classList.add('in-ship');
     targetGridSquare = gridAdd(targetGridSquare, direction);
   }
 
-  targetDiv = document.getElementById(`${playerID}-${targetGridSquare}`);
+  targetDiv = document.getElementById(`${player.id}-${targetGridSquare}`);
   targetSpan = targetDiv.querySelector('span');
-  targetDiv.classList.add(ship.orientation === 'ver' ? 'ship-bottom' : 'ship-right');
+  targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}bottom` : `ship-${borderModifier}right`);
   targetSpan.classList.add('in-ship');
 
 }
 
 function getShipSquares(ship) {
   // Returns an array of squares where a ship is sitting.
-  occupiedSquares = [ship.topLeft];
+  let occupiedSquares = [ship.topLeft];
   nextSquare = ship.topLeft;
   let direction = ship.orientation === 'ver' ? 'row' : 'col';
 
@@ -220,6 +244,30 @@ function getShipSquares(ship) {
   }
 
   return occupiedSquares;
+}
+
+function getDeployedShipsSquares(player) {
+  // Return an array containing all squares that a current player's deployed ships are occupying.
+  let occupiedSquares = [];
+
+  for(const ship in player.ships) {
+    if(ships[ship].deployed) {
+      occupiedSquares.push(...getShipSquares(ships[ship]));
+    }
+  }
+
+  return occupiedSquares;
+}
+
+function detectCollision(player, ship) {
+  const occupiedSquares = getDeployedShipsSquares(player);
+  const desiredSquares = getShipSquares(ship);
+
+  desiredSquares.forEach(function(square) {
+    if(occupiedSquares.includes(square)) return true;
+  });
+
+  return false;
 }
 
 function gridAdd(pos, dir, num) {
