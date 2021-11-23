@@ -156,35 +156,70 @@ function render() {
         boardSquareSpan.classList.add('peg-hole');
       }
     }
+
+    // Then render ships
+    let state = '';
+    for(ship in player.ships) {
+      if(ship === 'carrier') {
+        player.ships[ship].topLeft = 'A1';
+        player.ships[ship].orientation = 'ver';
+      }
+      else if(ship === 'battleship') {
+        player.ships[ship].topLeft = 'C4';
+        player.ships[ship].orientation = 'hor';
+      }
+      else if(ship === 'cruiser') { player.ships[ship].topLeft = 'E3'; }
+      else if(ship === 'submarine') {
+        player.ships[ship].topLeft = 'G9';
+        player.ships[ship].orientation = 'ver';
+      }
+      else if(ship === 'destroyer') { player.ships[ship].topLeft = 'I6'; }
+
+      renderShip(player.ships[ship], player.id, state);
+    }
   });
-
-  // Then render ships
-
 
   // Then render messages (or is messaging separate?)
 
+}
+
+function renderShip(ship, playerID, borderColor) {
+  let targetGridSquare = ship.topLeft;
+  let shipLength = ship.squares;
+  let direction = ship.orientation === 'ver' ? 'row' : 'col';
+
+  let targetDiv = document.getElementById(`${playerID}-${targetGridSquare}`);
+  let targetSpan = targetDiv.querySelector('span');
+  targetDiv.classList.add(ship.orientation === 'ver' ? 'ship-top' : 'ship-left');
+  targetSpan.classList.add('in-ship');
+  targetGridSquare = gridAdd(targetGridSquare, direction);
+
+  for(i = 0; i < shipLength - 2; i++) {
+    let targetDiv = document.getElementById(`${playerID}-${targetGridSquare}`);
+    let targetSpan = targetDiv.querySelector('span');
+    targetDiv.classList.add(ship.orientation === 'ver' ? 'ship-tb-mid' : 'ship-lr-mid');
+    targetSpan.classList.add('in-ship');
+    targetGridSquare = gridAdd(targetGridSquare, direction);
+  }
+
+  targetDiv = document.getElementById(`${playerID}-${targetGridSquare}`);
+  targetSpan = targetDiv.querySelector('span');
+  targetDiv.classList.add(ship.orientation === 'ver' ? 'ship-bottom' : 'ship-right');
+  targetSpan.classList.add('in-ship');
 
 }
 
-function renderShip(ship, topLeft, whichBoard, borderColor) {
-  topLeft = topLeft ? topLeft : 'A1';
-  playerBoard = 'p2';
+function getShipSquares(ship) {
+  // Returns an array of squares where a ship is sitting.
+  occupiedSquares = [ship.topLeft];
+  nextSquare = ship.topLeft;
+  let direction = ship.orientation === 'ver' ? 'row' : 'col';
 
-  let targetGridSquare = topLeft;
-  let shipLength = 3;
-
-  let targetDiv = document.getElementById(`${playerBoard}-${targetGridSquare}`);
-  targetDiv.classList.add('ship-left');
-  targetGridSquare = gridAdd(targetGridSquare, 'col');
-
-  for(i = 0; i < shipLength - 2; i++) {
-    let targetDiv = document.getElementById(`${playerBoard}-${targetGridSquare}`);
-    targetDiv.classList.add('ship-lr-mid');
-    targetGridSquare = gridAdd(targetGridSquare, 'col');
+  for(i = 0; i < ship.squares - 1; i++) {
+    occupiedSquares.push(gridAdd(occupiedSquares[i], direction));
   }
-  targetDiv = document.getElementById(`${playerBoard}-${targetGridSquare}`);
-  targetDiv.classList.add('ship-right');
 
+  return occupiedSquares;
 }
 
 function gridAdd(pos, dir, num) {
