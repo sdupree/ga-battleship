@@ -1,6 +1,6 @@
 /*----- Constants -----*/
 // The 5 ships are: Carrier (occupies 5 spaces), Battleship (4), Cruiser (3), Submarine (3), and Destroyer (2).
-const ships = {
+const baseShips = {
   carrier: {
     squares: 5
   },
@@ -52,8 +52,9 @@ function init() {
       player.board[pos] = null;
     });
     // Initialize player's ships.
-    for(const ship in ships) {
-      player.ships[ship] = ships[ship];
+    for(const ship in baseShips) {
+      player.ships[ship] = {};
+      player.ships[ship].squares = baseShips[ship].squares;
       player.ships[ship].sunk = false;
       player.ships[ship].deploying = false;
       player.ships[ship].delpoyed = false;
@@ -80,16 +81,32 @@ function init() {
         }
       }
     });
+    players.forEach(function(player) {
+      // Some fake ship data for testing:
+      player.ships['carrier'].topLeft = 'A1';
+      player.ships['carrier'].orientation = 'ver';
+      player.ships['carrier'].deployed = true;
+      player.ships['battleship'].topLeft = 'C4';
+      player.ships['battleship'].orientation = 'hor';
+      player.ships['battleship'].deployed = true;
+      player.ships['cruiser'].topLeft = 'E1';
+      player.ships['cruiser'].deploying = true;
+      player.ships['submarine'].topLeft = 'G9';
+      player.ships['submarine'].orientation = 'ver';
+      player.ships['submarine'].deployed = true;
+      player.ships['destroyer'].topLeft = 'I6';
+      player.ships['destroyer'].orientation = 'hor';
+      player.ships['destroyer'].deployed = true;
+    });
+
+
   });
 
-  // Whose turn is it?
-  turn = 'p1';
+  // Whose turn is it? ('null' until ships are placed.)
+  turn = null;
 
   // Initialize "winner".
   winner = undefined;
-
-  // Set playMode to "place-ships".
-  playMode = "place-ships";
 }
 
 // generateBoardPositions populates our array of name-friendly board spaces with e.g. "A1" - "J10".
@@ -162,34 +179,8 @@ function render() {
       }
     }
 
+    // Then render ships
     for(ship in player.ships) {
-      // Some fake ship data for testing:
-      if(ship === 'carrier') {
-        player.ships[ship].topLeft = 'A1';
-        player.ships[ship].orientation = 'ver';
-        player.ships[ship].deployed = true;
-      }
-      else if(ship === 'battleship') {
-        player.ships[ship].topLeft = 'C4';
-        player.ships[ship].orientation = 'hor';
-        player.ships[ship].deployed = true;
-      }
-      else if(ship === 'cruiser') {
-        player.ships[ship].topLeft = 'E1';
-        player.ships[ship].deploying = true;
-      }
-      else if(ship === 'submarine') {
-        player.ships[ship].topLeft = 'G9';
-        player.ships[ship].orientation = 'ver';
-        player.ships[ship].deployed = true;
-      }
-      else if(ship === 'destroyer') {
-        player.ships[ship].topLeft = 'I6';
-        player.ships[ship].orientation = 'hor';
-        player.ships[ship].deployed = true;
-      }
-      
-      // Then render ships
       renderShip(player.ships[ship], player);
     }
   });
@@ -251,8 +242,8 @@ function getDeployedShipsSquares(player) {
   let occupiedSquares = [];
 
   for(const ship in player.ships) {
-    if(ships[ship].deployed) {
-      occupiedSquares.push(...getShipSquares(ships[ship]));
+    if(player.ships[ship].deployed) {
+      occupiedSquares.push(...getShipSquares(player.ships[ship]));
     }
   }
 
@@ -263,11 +254,13 @@ function detectCollision(player, ship) {
   const occupiedSquares = getDeployedShipsSquares(player);
   const desiredSquares = getShipSquares(ship);
 
+  let retVal = false;
+
   desiredSquares.forEach(function(square) {
-    if(occupiedSquares.includes(square)) return true;
+    if(occupiedSquares.includes(square)) retVal = true;
   });
 
-  return false;
+  return retVal;
 }
 
 function gridAdd(pos, dir, num) {
