@@ -21,9 +21,9 @@
 
   7a) Phase I: Place Ships
 
-    7a-1) Player is told which ship to place.
-    -- Make selectable?
-    -- We'll use renderShip() a whole lot, but probably outside our main render().
+    7a-1) Display list of ships for user to select from; message "Select a ship and place the top-left corner"
+
+      7a-1a) User selects a ship.
 
     7a-2) As player moves mouse around board, ship is depicted in horizontal position.
 

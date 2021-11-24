@@ -18,6 +18,17 @@ const baseShips = {
   }
 };
 
+const boardDimensions = {
+  col: {
+    min: 1,
+    max: 10
+  },
+  row: {
+    min: 'A',
+    max: 'J'
+  }
+}
+
 
 /*----- Variables -----*/
 let players, turn, winner, boardPositions;
@@ -27,6 +38,7 @@ let players, turn, winner, boardPositions;
 
 
 /*----- Event Listeners -----*/
+document.getElementById('p2-board').addEventListener('mouseover', placeShip);
 
 
 /*----- Functions -----*/
@@ -66,47 +78,33 @@ function init() {
     document.querySelector(`#${player.id}-board`).innerHTML = generateBoardHTML(player.id);
   });
 
-  // Make random pegs (optional)
-  ['p1', 'p2'].forEach(function(which_board) {
-    boardPositions.forEach(function(pos) {
-      let div = document.getElementById(`${which_board}-${pos}`);
-      let span = div.querySelector('span');
-      if(Math.floor(Math.random() * 7) % 7 == 0) {
-        if(Math.floor(Math.random() * 7) % 7 == 0) {
-          span.classList.add('peg', 'red-peg');
-          span.classList.remove('peg-hole');
-        } else {
-          span.classList.add('peg', 'white-peg');
-          span.classList.remove('peg-hole');
-        }
-      }
-    });
-    players.forEach(function(player) {
-      // Some fake ship data for testing:
-      player.ships['carrier'].topLeft = 'A1';
-      player.ships['carrier'].orientation = 'ver';
-      player.ships['carrier'].deployed = true;
-      player.ships['battleship'].topLeft = 'C4';
-      player.ships['battleship'].orientation = 'hor';
-      player.ships['battleship'].deployed = true;
-      player.ships['cruiser'].topLeft = 'E1';
-      player.ships['cruiser'].deploying = true;
-      player.ships['submarine'].topLeft = 'G9';
-      player.ships['submarine'].orientation = 'ver';
-      player.ships['submarine'].deployed = true;
-      player.ships['destroyer'].topLeft = 'I6';
-      player.ships['destroyer'].orientation = 'hor';
-      player.ships['destroyer'].deployed = true;
-    });
-
-
+  // Some fake ship data for testing:
+  players.forEach(function(player) {
+    player.ships['carrier'].topLeft = 'A1';
+    player.ships['carrier'].orientation = 'ver';
+    player.ships['carrier'].deployed = true;
+    player.ships['battleship'].topLeft = 'C4';
+    player.ships['battleship'].orientation = 'hor';
+    player.ships['battleship'].deployed = true;
+    player.ships['cruiser'].topLeft = 'E1';
+    player.ships['cruiser'].orientation = 'ver';
+    player.ships['cruiser'].deploying = true;
+    player.ships['submarine'].topLeft = 'G9';
+    player.ships['submarine'].orientation = 'ver';
+    player.ships['submarine'].deployed = true;
+    player.ships['destroyer'].topLeft = 'I6';
+    player.ships['destroyer'].orientation = 'hor';
+    player.ships['destroyer'].deployed = true;
   });
-
+  
   // Whose turn is it? ('null' until ships are placed.)
   turn = null;
 
   // Initialize "winner".
   winner = undefined;
+
+  // Initial render.
+  render();
 }
 
 // generateBoardPositions populates our array of name-friendly board spaces with e.g. "A1" - "J10".
@@ -224,6 +222,38 @@ function renderShip(ship, player) {
 
 }
 
+function placeShip(e) {
+  // Use regex to scan target IDs to filter for game squares.
+  let m = e.target.id.match(/^p2-([A-J])(\d\d?)$/);
+  
+  if(m) {
+    // This target ID is a game square. Ignore everything else.
+    let row = null;
+    let col = null;
+    let ship = undefined;
+
+    row = m[1];
+    col = parseInt(m[2]);
+
+    for(const targetShip in players[1].ships) {
+      // There should be one and only one.
+      if(players[1].ships[targetShip].deploying) ship = players[1].ships[targetShip];
+    }
+
+    if(ship.orientation === 'hor' && col + (ship.squares - 1) > boardDimensions.col.max) {
+      col = boardDimensions.col.max - (ship.squares - 1);
+    }
+    if(ship.orientation === 'ver' && row.charCodeAt() + (ship.squares - 1) > boardDimensions.row.max.charCodeAt()) {
+      row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
+    }
+
+    ship.topLeft = `${row}${col}`;
+  }
+  
+  render();
+}
+
+
 function getShipSquares(ship) {
   // Returns an array of squares where a ship is sitting.
   let occupiedSquares = [ship.topLeft];
@@ -265,24 +295,36 @@ function detectCollision(player, ship) {
 
 function gridAdd(pos, dir, num) {
   // Add 'num' position(s) [default 1] to the 'row' or 'column' of the grid square we were passed, and return it, or 'undefined' if out of bounds.
-  let row = pos.substring(0, 1);
-  let col = pos.substring(1);
-  num ? num : 1;
+  let [row, col] = splitPos(pos);
+  let newPos = undefined;
+  num = num ? num : 1;
 
-  if(dir === 'row') { row = String.fromCharCode(row.charCodeAt() + 1); }
-  else if(dir === 'col') { col = parseInt(col) + 1; }
+  if(dir === 'row') { row = String.fromCharCode(row.charCodeAt() + num); }
+  else if(dir === 'col') { col = parseInt(col) + num; }
   else { return undefined; }
 
-  return `${row}${col}`;
+  newPos = `${row}${col}`;
+
+  // If not within bounds, return undefined.
+  if(! withinBounds(newPos)) return undefined;
+
+  return newPos;
 }
 
 function withinBounds(pos) {
   // Return 'false' if 'row' > 'J' or if 'col' > '10', else return true.
+  const [row, col] = splitPos(pos);
+
+  if(row.charCodeAt() - 65 > 9 || row.charCodeAt() - 65 < 0) { return false; }
+  if(parseInt(col) > 10 || parseInt(col) < 1) { return false; }
+
+  return true;
+}
+
+function splitPos(pos) {
+  // Give us 'A9' and we'll give you ['A', '9'].
   const row = pos.substring(0, 1);
   const col = pos.substring(1);
 
-  if(row.charCodeAt() - 65 > 9) { return false; }
-  if(parseInt(col) > 10) { return false; }
-
-  return true;
+  return [row, col];
 }
