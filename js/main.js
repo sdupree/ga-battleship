@@ -39,6 +39,7 @@ let players, turn, winner, boardPositions;
 
 /*----- Event Listeners -----*/
 document.getElementById('p2-board').addEventListener('mouseover', placeShip);
+document.addEventListener('click', handleClick);
 
 
 /*----- Functions -----*/
@@ -68,8 +69,8 @@ function init() {
       player.ships[ship] = {};
       player.ships[ship].squares = baseShips[ship].squares;
       player.ships[ship].sunk = false;
-      player.ships[ship].deploying = false;
-      player.ships[ship].delpoyed = false;
+      player.ships[ship].status = 'undeployed';
+      player.ships[ship].anchorSquare = undefined;
       player.ships[ship].topLeft = undefined;
       player.ships[ship].orientation = undefined;
     }
@@ -82,19 +83,19 @@ function init() {
   players.forEach(function(player) {
     player.ships['carrier'].topLeft = 'A1';
     player.ships['carrier'].orientation = 'ver';
-    player.ships['carrier'].deployed = true;
+    player.ships['carrier'].status = 'deployed';
     player.ships['battleship'].topLeft = 'C4';
     player.ships['battleship'].orientation = 'hor';
-    player.ships['battleship'].deployed = true;
+    player.ships['battleship'].status = 'deployed';
     player.ships['cruiser'].topLeft = 'E1';
     player.ships['cruiser'].orientation = 'ver';
-    player.ships['cruiser'].deploying = true;
+    player.ships['cruiser'].status = 'deploying';
     player.ships['submarine'].topLeft = 'G9';
     player.ships['submarine'].orientation = 'ver';
-    player.ships['submarine'].deployed = true;
+    player.ships['submarine'].status = 'deployed';
     player.ships['destroyer'].topLeft = 'I6';
     player.ships['destroyer'].orientation = 'hor';
-    player.ships['destroyer'].deployed = true;
+    player.ships['destroyer'].status = 'deployed';
   });
   
   // Whose turn is it? ('null' until ships are placed.)
@@ -190,69 +191,117 @@ function render() {
 }
 
 function renderShip(ship, player) {
-  let targetGridSquare = ship.topLeft;
+  let targetSquare = ship.topLeft;
   let shipLength = ship.squares;
   let direction = ship.orientation === 'ver' ? 'row' : 'col';
   let borderModifier = '';
 
   // Detect collisions.
-  if(ship.deploying) {
+  if(ship.status === 'deploying' || ship.status === 'anchored') {
     borderModifier = 'deploying-';
     if(detectCollision(player, ship)) borderModifier = 'collision-';
   }
 
-  let targetDiv = document.getElementById(`${player.id}-${targetGridSquare}`);
-  let targetSpan = targetDiv.querySelector('span');
-  targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}top` : `ship-${borderModifier}left`);
-  targetSpan.classList.add('in-ship');
-  targetGridSquare = gridAdd(targetGridSquare, direction);
-
-  for(i = 0; i < shipLength - 2; i++) {
-    let targetDiv = document.getElementById(`${player.id}-${targetGridSquare}`);
+  // Draw ship body.
+  for(i = 0; i < shipLength; i++) {
+    let targetDiv = document.getElementById(`${player.id}-${targetSquare}`);
     let targetSpan = targetDiv.querySelector('span');
-    targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}tb-mid` : `ship-${borderModifier}lr-mid`);
-    targetSpan.classList.add('in-ship');
-    targetGridSquare = gridAdd(targetGridSquare, direction);
+    if(i === 0) {
+      // Top/left
+      targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}top` : `ship-${borderModifier}left`);
+    } else if(i === shipLength - 1) {
+      // Bottom/right
+      targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}bottom` : `ship-${borderModifier}right`);
+    } else {
+      // Middle
+      targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}tb-mid` : `ship-${borderModifier}lr-mid`);
+    }
+    
+    // Peg/hole color adjustment
+    if(player.board[targetSquare]) {
+      // Hit.
+      targetSpan.classList.remove('white-peg');
+      targetSpan.classList.add('red-peg');
+    } else {
+      // Not shot at.
+      if(ship.status === 'anchored' && ship.anchorSquare === targetSquare) {
+        targetSpan.classList.add('anchor');
+      } else {
+        targetSpan.classList.add('in-ship');
+      }
+    }
+
+    // Move to next square.
+    targetSquare = gridAdd(targetSquare, direction);
   }
-
-  targetDiv = document.getElementById(`${player.id}-${targetGridSquare}`);
-  targetSpan = targetDiv.querySelector('span');
-  targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}bottom` : `ship-${borderModifier}right`);
-  targetSpan.classList.add('in-ship');
-
 }
 
 function placeShip(e) {
-  // Use regex to scan target IDs to filter for game squares.
-  let m = e.target.id.match(/^p2-([A-J])(\d\d?)$/);
-  
-  if(m) {
-    // This target ID is a game square. Ignore everything else.
-    let row = null;
-    let col = null;
-    let ship = undefined;
+  const [player_id, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
+  if(! player_id || ! square) return undefined;
 
-    row = m[1];
-    col = parseInt(m[2]);
+  let player = getPlayerFromPlayerID(player_id);
 
-    for(const targetShip in players[1].ships) {
-      // There should be one and only one.
-      if(players[1].ships[targetShip].deploying) ship = players[1].ships[targetShip];
-    }
+  // One of these should exist. If not, just do nothing.
+  const deployingShip = getDeployingShip(player);
+  const anchoredShip = getAnchoredShip(player);
 
+  if(deployingShip) {
+    // Ship is 'deploying', do boundary wrangling.
+    const ship = deployingShip;
+
+    let [row, col] = splitPos(square);
+    // Adjust ship.topLeft if ship would extend beyond board.
     if(ship.orientation === 'hor' && col + (ship.squares - 1) > boardDimensions.col.max) {
       col = boardDimensions.col.max - (ship.squares - 1);
     }
     if(ship.orientation === 'ver' && row.charCodeAt() + (ship.squares - 1) > boardDimensions.row.max.charCodeAt()) {
       row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
     }
-
+    
     ship.topLeft = `${row}${col}`;
+
+  } else if(anchoredShip) {
+    // Ship is 'anchored', do orientation.
+    const ship = anchoredShip;
+    let [mouseRow, mouseCol] = splitPos(square);
+    let [shipRow,  shipCol]  = splitPos(ship.anchorSquare);
+
+    // Change ship orientation when mouse aligns with alternate ship alignment.
+    if(mouseRow === shipRow && mouseCol !== shipCol && ship.orientation !== 'hor') ship.orientation = 'hor';
+    else if(mouseCol === shipCol && mouseRow !== shipRow && ship.orientation !== 'ver') ship.orientation = 'ver';
   }
-  
+
   render();
 }
 
+function handleClick(e) {
+  // If message is popped up, handle that first.
+
+  // If game play mode is 'place ship', handle 'place ship' logic'
+  console.log('present');
+  if(! turn) {
+    // Get player ID and game square, or return undefined if the click wasn't on a game square.
+    console.log(e.target.id);
+    const [player_id, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
+    if(! player_id || ! square) return undefined;
+
+    const player = getPlayerFromPlayerID(player_id);
+
+    const ship = getDeployingShip(player);
+
+    if(! detectCollision(player, ship)) {
+      console.log("We have travelled far.");
+      ship.status = 'anchored';
+      ship.anchorSquare = square;
+    }
+    // 
+  }
+
+  // If game play mode is 'play game', handle that here.
+
+  render();
+}
 
 function getShipSquares(ship) {
   // Returns an array of squares where a ship is sitting.
@@ -272,7 +321,7 @@ function getDeployedShipsSquares(player) {
   let occupiedSquares = [];
 
   for(const ship in player.ships) {
-    if(player.ships[ship].deployed) {
+    if(player.ships[ship].status === 'deployed') {
       occupiedSquares.push(...getShipSquares(player.ships[ship]));
     }
   }
@@ -294,7 +343,7 @@ function detectCollision(player, ship) {
 }
 
 function gridAdd(pos, dir, num) {
-  // Add 'num' position(s) [default 1] to the 'row' or 'column' of the grid square we were passed, and return it, or 'undefined' if out of bounds.
+  // Add 'num' position(s) [default 1, negative okay] to the 'row' or 'column' of the grid square we were passed, and return it, or 'undefined' if out of bounds.
   let [row, col] = splitPos(pos);
   let newPos = undefined;
   num = num ? num : 1;
@@ -327,4 +376,46 @@ function splitPos(pos) {
   const col = pos.substring(1);
 
   return [row, col];
+}
+
+function getPlayerIDAndSquareFromTargetID(id) {
+  // Returns [player_id, square] or undefined.
+  let player_id, square, m;
+
+  m = id.match(/^(p\d)-([A-J]\d\d?)$/);
+  if(m && m[1] && m[2]) {
+    player_id = m[1];
+    square = m[2];
+  }
+
+  return [player_id, square];
+}
+
+function getDeployingShip(player) {
+  // Returns the ship with status 'deploying' from a player's list of ships, or undefined if there are none.
+  for(const targetShip in player.ships) {
+    // There should be one and only one.
+    if(player.ships[targetShip].status === 'deploying') return player.ships[targetShip];
+  }
+
+  return undefined;
+}
+
+function getAnchoredShip(player) {
+  // Returns the ship with status 'anchored' from a player's list of ships, or undefined if there are none.
+  for(const targetShip in player.ships) {
+    // There should be one and only one.
+    if(player.ships[targetShip].status === 'anchored') return player.ships[targetShip];
+  }
+
+  return undefined;
+}
+
+function getPlayerFromPlayerID(player_id) {
+  let player = undefined;
+  players.forEach(function(whichPlayer) {
+    if(whichPlayer.id === player_id) player = whichPlayer;
+  });
+
+  return player;
 }
