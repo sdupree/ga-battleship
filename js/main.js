@@ -75,27 +75,31 @@ function init() {
       player.ships[ship].orientation = undefined;
     }
 
+    deployNextShip(player);  // Deploy first ship.
+
     // Construct game board HTML.
     document.querySelector(`#${player.id}-board`).innerHTML = generateBoardHTML(player.id);
   });
 
   // Some fake ship data for testing:
   players.forEach(function(player) {
-    player.ships['carrier'].topLeft = 'A1';
-    player.ships['carrier'].orientation = 'ver';
-    player.ships['carrier'].status = 'deployed';
-    player.ships['battleship'].topLeft = 'C4';
-    player.ships['battleship'].orientation = 'hor';
-    player.ships['battleship'].status = 'deployed';
-    player.ships['cruiser'].topLeft = 'E1';
-    player.ships['cruiser'].orientation = 'ver';
-    player.ships['cruiser'].status = 'deploying';
-    player.ships['submarine'].topLeft = 'G9';
-    player.ships['submarine'].orientation = 'ver';
-    player.ships['submarine'].status = 'deployed';
-    player.ships['destroyer'].topLeft = 'I6';
-    player.ships['destroyer'].orientation = 'hor';
-    player.ships['destroyer'].status = 'deployed';
+    if(player === 'p1') {
+      player.ships['carrier'].topLeft = 'A1';
+      player.ships['carrier'].orientation = 'ver';
+      player.ships['carrier'].status = 'deployed';
+      player.ships['battleship'].topLeft = 'C4';
+      player.ships['battleship'].orientation = 'hor';
+      player.ships['battleship'].status = 'deployed';
+      player.ships['cruiser'].topLeft = 'E1';
+      player.ships['cruiser'].orientation = 'ver';
+      player.ships['cruiser'].status = 'deployed';
+      player.ships['submarine'].topLeft = 'E4';
+      player.ships['submarine'].orientation = 'ver';
+      player.ships['submarine'].status = 'deployed';
+      player.ships['destroyer'].topLeft = 'I6';
+      player.ships['destroyer'].orientation = 'hor';
+      player.ships['destroyer'].status = 'deployed';
+    }
   });
   
   // Whose turn is it? ('null' until ships are placed.)
@@ -135,7 +139,7 @@ function generateBoardHTML(player) {
   // Generate middle 10 rows.
   boardPositions.forEach(function(pos, idx) {
     if(idx % 10 === 0) { boardHtml += '<div class="board-border-square">' + pos.charAt() + '</div>'; }
-    boardHtml += `<div class="board-square" id="${player}-${pos}"><span class="peg-hole"></span></div>`;
+    boardHtml += `<div class="board-square" id="${player}-${pos}"><span id="${player}-${pos}-span" class="peg-hole"></span></div>`;
     if(idx % 10 === 9) { boardHtml += '<div class="board-border-square"></div>\n'; }
   });
 
@@ -191,6 +195,9 @@ function render() {
 }
 
 function renderShip(ship, player) {
+  if(ship.status === 'undeployed') return;
+  if(! ship.topLeft) return;
+
   let targetSquare = ship.topLeft;
   let shipLength = ship.squares;
   let direction = ship.orientation === 'ver' ? 'row' : 'col';
@@ -241,36 +248,39 @@ function placeShip(e) {
   if(! player_id || ! square) return undefined;
 
   let player = getPlayerFromPlayerID(player_id);
-
+  let [row, col] = splitPos(square);  // 'square' is where the mouse is.
+  
   // One of these should exist. If not, just do nothing.
-  const deployingShip = getDeployingShip(player);
-  const anchoredShip = getAnchoredShip(player);
+  const ship = getDeployingOrAnchoredShip(player);
+  if(! ship) return undefined;
 
-  if(deployingShip) {
-    // Ship is 'deploying', do boundary wrangling.
-    const ship = deployingShip;
-
-    let [row, col] = splitPos(square);
-    // Adjust ship.topLeft if ship would extend beyond board.
-    if(ship.orientation === 'hor' && col + (ship.squares - 1) > boardDimensions.col.max) {
-      col = boardDimensions.col.max - (ship.squares - 1);
-    }
-    if(ship.orientation === 'ver' && row.charCodeAt() + (ship.squares - 1) > boardDimensions.row.max.charCodeAt()) {
-      row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
-    }
-    
+  // If we're placing a ship that doesn't have a topLeft, it's new.
+  if(! ship.topLeft) {
     ship.topLeft = `${row}${col}`;
-
-  } else if(anchoredShip) {
-    // Ship is 'anchored', do orientation.
-    const ship = anchoredShip;
-    let [mouseRow, mouseCol] = splitPos(square);
-    let [shipRow,  shipCol]  = splitPos(ship.anchorSquare);
+    ship.orientation = 'hor';
+  }
+  
+  if(ship.status === 'anchored') {
+    let [anchorRow, anchorCol]  = splitPos(ship.anchorSquare);
+    // Adjust orientation if necessary.
 
     // Change ship orientation when mouse aligns with alternate ship alignment.
-    if(mouseRow === shipRow && mouseCol !== shipCol && ship.orientation !== 'hor') ship.orientation = 'hor';
-    else if(mouseCol === shipCol && mouseRow !== shipRow && ship.orientation !== 'ver') ship.orientation = 'ver';
+    if(row === anchorRow && col !== anchorCol && ship.orientation !== 'hor') ship.orientation = 'hor';
+    else if(col === anchorCol && row !== anchorRow && ship.orientation !== 'ver') ship.orientation = 'ver';
+
+    row = anchorRow;
+    col = anchorCol;
   }
+
+  // Adjust ship.topLeft if ship would extend beyond board.
+  if(ship.orientation === 'hor' && col + (ship.squares - 1) > boardDimensions.col.max) {
+    col = boardDimensions.col.max - (ship.squares - 1);
+  }
+  if(ship.orientation === 'ver' && row.charCodeAt() + (ship.squares - 1) > boardDimensions.row.max.charCodeAt()) {
+    row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
+  }
+  
+  ship.topLeft = `${row}${col}`;
 
   render();
 }
@@ -279,23 +289,29 @@ function handleClick(e) {
   // If message is popped up, handle that first.
 
   // If game play mode is 'place ship', handle 'place ship' logic'
-  console.log('present');
   if(! turn) {
     // Get player ID and game square, or return undefined if the click wasn't on a game square.
-    console.log(e.target.id);
     const [player_id, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
     if(! player_id || ! square) return undefined;
 
     const player = getPlayerFromPlayerID(player_id);
 
-    const ship = getDeployingShip(player);
+    const ship = getDeployingOrAnchoredShip(player);
 
     if(! detectCollision(player, ship)) {
-      console.log("We have travelled far.");
-      ship.status = 'anchored';
-      ship.anchorSquare = square;
+      if(ship.status === 'deploying') {
+        ship.status = 'anchored';
+        ship.anchorSquare = square;
+      } else if(ship.status === 'anchored') {
+        ship.status = 'deployed';
+        if(! deployNextShip(player)) {
+          // No more ships to deploy; prepare to begin game.
+          document.getElementById('p2-board').removeEventListener('mouseover', placeShip);
+          turn = 'p1';
+          console.log("BEGINNING GAME");
+        }
+      }
     }
-    // 
   }
 
   // If game play mode is 'play game', handle that here.
@@ -373,7 +389,7 @@ function withinBounds(pos) {
 function splitPos(pos) {
   // Give us 'A9' and we'll give you ['A', '9'].
   const row = pos.substring(0, 1);
-  const col = pos.substring(1);
+  const col = parseInt(pos.substring(1));
 
   return [row, col];
 }
@@ -382,7 +398,7 @@ function getPlayerIDAndSquareFromTargetID(id) {
   // Returns [player_id, square] or undefined.
   let player_id, square, m;
 
-  m = id.match(/^(p\d)-([A-J]\d\d?)$/);
+  m = id.match(/^(p\d)-([A-J]\d\d?)(:?-span)?$/);
   if(m && m[1] && m[2]) {
     player_id = m[1];
     square = m[2];
@@ -391,21 +407,11 @@ function getPlayerIDAndSquareFromTargetID(id) {
   return [player_id, square];
 }
 
-function getDeployingShip(player) {
-  // Returns the ship with status 'deploying' from a player's list of ships, or undefined if there are none.
+function getDeployingOrAnchoredShip(player) {
+  // Returns the ship with status 'deploying' or 'anchored' from a player's list of ships, or undefined if there are none.
   for(const targetShip in player.ships) {
     // There should be one and only one.
-    if(player.ships[targetShip].status === 'deploying') return player.ships[targetShip];
-  }
-
-  return undefined;
-}
-
-function getAnchoredShip(player) {
-  // Returns the ship with status 'anchored' from a player's list of ships, or undefined if there are none.
-  for(const targetShip in player.ships) {
-    // There should be one and only one.
-    if(player.ships[targetShip].status === 'anchored') return player.ships[targetShip];
+    if(player.ships[targetShip].status === 'deploying' || player.ships[targetShip].status === 'anchored') return player.ships[targetShip];
   }
 
   return undefined;
@@ -418,4 +424,26 @@ function getPlayerFromPlayerID(player_id) {
   });
 
   return player;
+}
+
+function getNextShipToDeploy(player) {
+  // Always do this in the same order.
+  const shipOrder = ['carrier', 'battleship', 'cruiser', 'submarine', 'destroyer'];
+
+  for(const ship of shipOrder) {
+    if(player.ships[ship].status === 'undeployed') return player.ships[ship];
+  }
+
+  return null;  // No more ships!
+}
+
+function deployNextShip(player) {
+  // Deploy another ship. Return 'true' if deployed or 'false' if no more.
+  const shipToDeploy = getNextShipToDeploy(player);
+  if(shipToDeploy) {
+    shipToDeploy.status = 'deploying';
+    return true;
+  }
+
+  return false;
 }
