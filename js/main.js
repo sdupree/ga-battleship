@@ -72,7 +72,7 @@ function init() {
       player.ships[ship].status = 'undeployed';
       player.ships[ship].anchorSquare = undefined;
       player.ships[ship].topLeft = undefined;
-      player.ships[ship].orientation = undefined;
+      player.ships[ship].orientation = 'hor';
     }
 
     deployNextShip(player);  // Deploy first ship.
@@ -81,27 +81,36 @@ function init() {
     document.querySelector(`#${player.id}-board`).innerHTML = generateBoardHTML(player.id);
   });
 
-  // Some fake ship data for testing:
-  players.forEach(function(player) {
-    if(player === 'p1') {
-      player.ships['carrier'].topLeft = 'A1';
-      player.ships['carrier'].orientation = 'ver';
-      player.ships['carrier'].status = 'deployed';
-      player.ships['battleship'].topLeft = 'C4';
-      player.ships['battleship'].orientation = 'hor';
-      player.ships['battleship'].status = 'deployed';
-      player.ships['cruiser'].topLeft = 'E1';
-      player.ships['cruiser'].orientation = 'ver';
-      player.ships['cruiser'].status = 'deployed';
-      player.ships['submarine'].topLeft = 'E4';
-      player.ships['submarine'].orientation = 'ver';
-      player.ships['submarine'].status = 'deployed';
-      player.ships['destroyer'].topLeft = 'I6';
-      player.ships['destroyer'].orientation = 'hor';
-      player.ships['destroyer'].status = 'deployed';
+  // Generate random computer ship positions.
+  possibleBoardPositions = [...boardPositions];
+  console.log('init');
+  for(shipName in players[0].ships) {
+    const ship = players[0].ships[shipName];
+    while(ship.status !== 'deployed') {
+      const rnd = Math.floor(Math.random() * possibleBoardPositions.length - 1);
+      const pos = possibleBoardPositions[rnd];
+      let [row, col] = splitPos(pos);
+      const orientation = Math.floor(Math.random() * 2) ? 'hor' : 'ver';
+
+      possibleBoardPositions.slice(rnd, 1);
+
+      // Adjust ship.topLeft if ship would extend beyond board.
+      if(orientation === 'hor' && col + (ship.squares - 1) > boardDimensions.col.max) {
+        col = boardDimensions.col.max - (ship.squares - 1);
+      }
+      if(orientation === 'ver' && row.charCodeAt() + (ship.squares - 1) > boardDimensions.row.max.charCodeAt()) {
+        row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
+      }
+
+      ship.topLeft = `${row}${col}`;
+      ship.orientation = orientation;
+
+      if(! detectCollision(players[0], ship)) {
+        ship.status = 'deployed';
+      }
     }
-  });
-  
+  }
+
   // Whose turn is it? ('null' until ships are placed.)
   turn = null;
 
@@ -257,7 +266,6 @@ function placeShip(e) {
   // If we're placing a ship that doesn't have a topLeft, it's new.
   if(! ship.topLeft) {
     ship.topLeft = `${row}${col}`;
-    ship.orientation = 'hor';
   }
   
   if(ship.status === 'anchored') {
