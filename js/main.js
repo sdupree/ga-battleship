@@ -305,6 +305,8 @@ function placeShip(e) {
 }
 
 function handleClick(e) {
+  if(winner) return undefined;  // Can prolly turn off click handler if there is a winner...
+
   // If message is popped up, handle that first.
 
   // If game play mode is 'place ship', handle 'place ship' logic'
@@ -353,9 +355,38 @@ function handleClick(e) {
     const shipsSquares = getDeployedShipsSquares(targetPlayer);
     if(shipsSquares.every(function(sq) { return targetPlayer.board[sq]; })) {
       // WINNER!
+      winner = turn;
+      render();
       console.log("winner!");
+      return undefined;
     }
 
+    // Advance turn.
+    turn = 'p1';
+
+    // Computer's turn!
+    const playableSquares = [];
+    for(const square in players['p2'].board) {
+      if(! players['p2'].board[square]) playableSquares.push(square);
+    }
+
+    const randomSquare = playableSquares[Math.floor(Math.random() * playableSquares.length)];
+    console.log(playableSquares.length + " " + randomSquare);
+
+    players['p2'].board[randomSquare] = true;
+
+    // Did the computer win the game?
+    const p2ShipsSquares = getDeployedShipsSquares(players['p2']);
+    if(p2ShipsSquares.every(function(sq) { return players['p2'].board[sq]; })) {
+      // WINNER!
+      winner = turn;
+      render();
+      console.log("COMPUTER winner!");
+      return undefined;
+    }
+
+    // End computer's turn.
+    turn = 'p2';
   }
 
   render();
