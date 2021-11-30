@@ -84,7 +84,7 @@ function init() {
 
   // Generate random computer ship positions.
   possibleBoardPositions = [...boardPositions];
-  console.log('init');
+  
   for(shipName in players['p1'].ships) {
     const ship = players['p1'].ships[shipName];
     while(ship.status !== 'deployed') {
@@ -168,7 +168,6 @@ function render() {
   for(const playerID in players) {
     const player = players[playerID];
     const hideShips = playerID === 'p1' ? true : false;  // Hide player 1's ships.
-    console.log(hideShips + " " + playerID);
 
     // First render board (hits/misses)
     for(const boardSquareID in player.board) {
@@ -252,8 +251,10 @@ function renderShip(ship, player, hideShip) {
     } else {
       // Not shot at.
       if(ship.status === 'anchored' && ship.anchorSquare === targetSquare) {
+        // Hole is green.
         targetSpan.classList.add('anchor');
       } else if(! hideShip) {
+        // Hole is dark gray.
         targetSpan.classList.add('in-ship');
       }
     }
@@ -330,27 +331,36 @@ function handleClick(e) {
         }
       }
     }
-  } else if(turn === 'p2') {
-    // Player two's turn! (First handle P2, then handle P1 (computer).)
+  } else {
+    // Player's turn! (First handle P2, then handle P1 (computer).)
     const [targetPlayerID, targetSquare] = getPlayerIDAndSquareFromTargetID(e.target.id);
-    if(! targetPlayerID || ! targetSquare) return undefined;
 
+    // Target wasn't a game square.
+    if(! targetPlayerID || ! targetSquare) return undefined;
+    
     // You can't shoot at your own board!
     if(targetPlayerID === turn) return undefined;
-
+    
     const targetPlayer = players[targetPlayerID];
-
+    
     // If square has already been hit, take no action.
     if(targetPlayer.board[targetSquare]) return undefined;
-
+    
     // Update game board to indicate a shot was taken.
     targetPlayer.board[targetSquare] = true;
+    
+    // Did we win the game?
+    const shipsSquares = getDeployedShipsSquares(targetPlayer);
+    if(shipsSquares.every(function(sq) { return targetPlayer.board[sq]; })) {
+      // WINNER!
+      console.log("winner!");
+    }
 
-    // Check to see if we sunk a ship, and won the game.
   }
 
   render();
 }
+
 
 function getShipSquares(ship) {
   // Returns an array of squares where a ship is sitting.
