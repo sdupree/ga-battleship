@@ -210,6 +210,7 @@ body {
 
 .message {
   position: absolute;
+  visibility: hidden;
   /* float: left; */
   /* margin: 0 auto; */
   background-color: #f7ed9c;
@@ -221,4 +222,20 @@ body {
   border-radius: 10%;
   font-size: 3.5vh;
   padding: 1vh;
+}
+
+.show-message {
+  visibility: visible;
+  -webkit-animation: fadeIn 1s;
+  animation: fadeIn 1s
+}
+
+@-webkit-keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
+}
+
+@keyframes fadeIn {
+  from {opacity: 0;}
+  to {opacity: 1;}
 }

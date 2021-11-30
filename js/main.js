@@ -31,7 +31,7 @@ const boardDimensions = {
 
 
 /*----- Variables -----*/
-let players, turn, winner, boardPositions;
+let players, turn, winner, message, boardPositions;
 
 
 /*----- Cached Element References -----*/
@@ -41,8 +41,11 @@ const gameBoardEls = {
 };
 
 // We'll fill these two during cacheElementReferences() after we've generated the HTML.
-const gameSquareEls = {};
+const gameSquareEls     = {};
 const gameSquareSpanEls = {};
+
+const messageContainerEl = document.getElementById('message-container');
+const messageTextEl      = document.getElementById('message-text');
 
 
 /*----- Event Listeners -----*/
@@ -129,6 +132,9 @@ function init() {
   // Initialize "winner".
   winner = undefined;
 
+  // Display 'welcome' message.
+  message = 'Welcome to GA Battleship!<br><br>Click to begin.<br><br>Then place your Carrier on the board below.';
+
   // Initial render.
   render();
 }
@@ -175,10 +181,8 @@ function generateBoardHTML(player) {
 
 function cacheElementReferences() {
   for(const player in players) {
-    console.log(player);
     for(const square in players[player].board) {
       const id = `${player}-${square}`;
-      console.log(id);
       gameSquareEls[id] = document.getElementById(id);
       gameSquareSpanEls[id] = gameSquareEls[id].querySelector('span');
     }
@@ -187,12 +191,11 @@ function cacheElementReferences() {
 
 function render() {
   // Render play areas.
-  // players.forEach(function(player) {
   for(const playerID in players) {
     const player = players[playerID];
     const hideShips = playerID === 'p1' ? true : false;  // Hide player 1's ships.
 
-    // First render board (hits/misses)
+    // Render board (hits/misses)
     for(const boardSquareID in player.board) {
       // Get HTML elements.
       const boardSquareFullID = `${player.id}-${boardSquareID}`;
@@ -221,14 +224,15 @@ function render() {
       }
     }
 
-    // Then render ships
+    // Render ships
     for(ship in player.ships) {
       renderShip(player.ships[ship], player, hideShips);
     }
   }
 
-  // Then render messages.
-
+  // Render messages.
+  if(message) { showMessage(message); }
+  else { hideMessage(); }
 }
 
 function renderShip(ship, player, hideShip) {
@@ -290,7 +294,12 @@ function renderShip(ship, player, hideShip) {
 }
 
 function showMessage(message) {
-  //
+  messageTextEl.innerHTML = message;
+  messageContainerEl.classList.add('show-message');
+}
+
+function hideMessage() {
+  messageContainerEl.classList.remove('show-message');
 }
 
 function placeShip(e) {
@@ -334,9 +343,13 @@ function placeShip(e) {
 }
 
 function handleClick(e) {
-  if(winner) return undefined;  // Can prolly turn off click handler if there is a winner...
-
-  // If message is popped up, handle that first.
+  // If message is popped up, clear it out.
+  if(message) {
+    message = '';
+    if(winner) init();
+    else render();
+    return undefined;
+  }
 
   // If game play mode is 'place ship', handle 'place ship' logic'
   if(! turn) {
@@ -358,7 +371,6 @@ function handleClick(e) {
           // No more ships to deploy; prepare to begin game.
           gameBoardEls['p2'].removeEventListener('mouseover', placeShip);
           turn = 'p2';
-          console.log("BEGINNING GAME");
         }
       }
     }
@@ -385,8 +397,8 @@ function handleClick(e) {
     if(shipsSquares.every(function(sq) { return targetPlayer.board[sq]; })) {
       // WINNER!
       winner = turn;
+      message = 'You have won! Play again?';
       render();
-      console.log("winner!");
       return undefined;
     }
 
@@ -400,7 +412,6 @@ function handleClick(e) {
     }
 
     const randomSquare = playableSquares[Math.floor(Math.random() * playableSquares.length)];
-    console.log(playableSquares.length + " " + randomSquare);
 
     players['p2'].board[randomSquare] = true;
 
@@ -409,8 +420,8 @@ function handleClick(e) {
     if(p2ShipsSquares.every(function(sq) { return players['p2'].board[sq]; })) {
       // WINNER!
       winner = turn;
+      message = 'The Computer Player has won! Play again?';
       render();
-      console.log("COMPUTER winner!");
       return undefined;
     }
 
