@@ -35,10 +35,18 @@ let players, turn, winner, boardPositions;
 
 
 /*----- Cached Element References -----*/
+const gameBoardEls = {
+  p1: document.getElementById('p1-board'),
+  p2: document.getElementById('p2-board')
+};
+
+// We'll fill these two during cacheElementReferences() after we've generated the HTML.
+const gameSquareEls = {};
+const gameSquareSpanEls = {};
 
 
 /*----- Event Listeners -----*/
-document.getElementById('p2-board').addEventListener('mouseover', placeShip);
+gameBoardEls['p2'].addEventListener('mouseover', placeShip);
 document.addEventListener('click', handleClick);
 
 
@@ -79,8 +87,11 @@ function init() {
     deployNextShip(player);  // Deploy first ship.
 
     // Construct game board HTML.
-    document.querySelector(`#${player.id}-board`).innerHTML = generateBoardHTML(player.id);
+    gameBoardEls[player.id].innerHTML = generateBoardHTML(player.id);
   }
+
+  // Cache element references.
+  cacheElementReferences();
 
   // Generate random computer ship positions.
   possibleBoardPositions = [...boardPositions];
@@ -162,6 +173,18 @@ function generateBoardHTML(player) {
   return boardHtml;
 }
 
+function cacheElementReferences() {
+  for(const player in players) {
+    console.log(player);
+    for(const square in players[player].board) {
+      const id = `${player}-${square}`;
+      console.log(id);
+      gameSquareEls[id] = document.getElementById(id);
+      gameSquareSpanEls[id] = gameSquareEls[id].querySelector('span');
+    }
+  }
+}
+
 function render() {
   // Render play areas.
   // players.forEach(function(player) {
@@ -172,8 +195,9 @@ function render() {
     // First render board (hits/misses)
     for(const boardSquareID in player.board) {
       // Get HTML elements.
-      const boardSquare = document.getElementById(`${player.id}-${boardSquareID}`);
-      const boardSquareSpan = boardSquare.querySelector('span');
+      const boardSquareFullID = `${player.id}-${boardSquareID}`;
+      const boardSquare = gameSquareEls[boardSquareFullID];
+      const boardSquareSpan = gameSquareSpanEls[boardSquareFullID];
 
       // Clear all non-default classes.
       // Trying to loop over an array while you remove elements causes odd behavior, so copy the array first!
@@ -226,8 +250,9 @@ function renderShip(ship, player, hideShip) {
 
   // Draw ship body.
   for(i = 0; i < shipLength; i++) {
-    let targetDiv = document.getElementById(`${player.id}-${targetSquare}`);
-    let targetSpan = targetDiv.querySelector('span');
+    const targetFullID = `${player.id}-${targetSquare}`;
+    let targetDiv = gameSquareEls[targetFullID];
+    let targetSpan = gameSquareSpanEls[targetFullID];
     
     if(! hideShip) {
       // Draw actual ship here, if it is not hidden.
@@ -262,6 +287,10 @@ function renderShip(ship, player, hideShip) {
     // Move to next square.
     targetSquare = gridAdd(targetSquare, direction);
   }
+}
+
+function showMessage(message) {
+  //
 }
 
 function placeShip(e) {
@@ -327,7 +356,7 @@ function handleClick(e) {
         ship.status = 'deployed';
         if(! deployNextShip(player)) {
           // No more ships to deploy; prepare to begin game.
-          document.getElementById('p2-board').removeEventListener('mouseover', placeShip);
+          gameBoardEls['p2'].removeEventListener('mouseover', placeShip);
           turn = 'p2';
           console.log("BEGINNING GAME");
         }
@@ -454,8 +483,8 @@ function withinBounds(pos) {
   // Return 'false' if 'row' > 'J' or if 'col' > '10', else return true.
   const [row, col] = splitPos(pos);
 
-  if(row.charCodeAt() - 65 > 9 || row.charCodeAt() - 65 < 0) { return false; }
-  if(parseInt(col) > 10 || parseInt(col) < 1) { return false; }
+  if(row.charCodeAt() > boardDimensions.row.max.charCodeAt() || row.charCodeAt() < boardDimensions.row.min.charCodeAt()) { return false; }
+  if(parseInt(col) > boardDimensions.col.max || parseInt(col) < boardDimensions.col.min) { return false; }
 
   return true;
 }
