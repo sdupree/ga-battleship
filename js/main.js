@@ -50,16 +50,17 @@ function init() {
   generateBoardPositions();
 
   // How many players?
-  players = [];
-  for(let i = 0; i < 2; i++) {
-    players[i] = {};
-    players[i].board = [];
-    players[i].ships = [];
-    players[i].id = `p${i + 1}`;
-  }
+  players = {
+    'p1': {},
+    'p2': {}
+  };
+  for(const playerID in players) {
+    const player = players[playerID];
+    
+    player.board = [];
+    player.ships = [];
+    player.id = playerID;
 
-  // Initialilze each player's board and ships.
-  players.forEach(function(player) {
     // Instantiate player's game board.
     boardPositions.forEach(function(pos) {
       player.board[pos] = null;
@@ -79,13 +80,13 @@ function init() {
 
     // Construct game board HTML.
     document.querySelector(`#${player.id}-board`).innerHTML = generateBoardHTML(player.id);
-  });
+  }
 
   // Generate random computer ship positions.
   possibleBoardPositions = [...boardPositions];
   console.log('init');
-  for(shipName in players[0].ships) {
-    const ship = players[0].ships[shipName];
+  for(shipName in players['p1'].ships) {
+    const ship = players['p1'].ships[shipName];
     while(ship.status !== 'deployed') {
       const rnd = Math.floor(Math.random() * possibleBoardPositions.length - 1);
       const pos = possibleBoardPositions[rnd];
@@ -102,10 +103,10 @@ function init() {
         row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
       }
 
-      ship.topLeft = `${row}${col}`;
+      ship.topLeft = makePos(row, col);
       ship.orientation = orientation;
 
-      if(! detectCollision(players[0], ship)) {
+      if(! detectCollision(players['p1'], ship)) {
         ship.status = 'deployed';
       }
     }
@@ -162,7 +163,13 @@ function generateBoardHTML(player) {
 }
 
 function render() {
-  players.forEach(function(player) {
+  // Render play areas.
+  // players.forEach(function(player) {
+  for(const playerID in players) {
+    const player = players[playerID];
+    const hideShips = playerID === 'p1' ? true : false;  // Hide player 1's ships.
+    console.log(hideShips + " " + playerID);
+
     // First render board (hits/misses)
     for(const boardSquareID in player.board) {
       // Get HTML elements.
@@ -193,19 +200,19 @@ function render() {
 
     // Then render ships
     for(ship in player.ships) {
-      renderShip(player.ships[ship], player);
+      renderShip(player.ships[ship], player, hideShips);
     }
-  });
+  }
 
-  // Manage event listeners (dependent on state)
-
-  // Then render messages (or is messaging separate?)
+  // Then render messages.
 
 }
 
-function renderShip(ship, player) {
+function renderShip(ship, player, hideShip) {
   if(ship.status === 'undeployed') return;
   if(! ship.topLeft) return;
+
+  hideShip = hideShip ? true : false;
 
   let targetSquare = ship.topLeft;
   let shipLength = ship.squares;
@@ -222,17 +229,21 @@ function renderShip(ship, player) {
   for(i = 0; i < shipLength; i++) {
     let targetDiv = document.getElementById(`${player.id}-${targetSquare}`);
     let targetSpan = targetDiv.querySelector('span');
-    if(i === 0) {
-      // Top/left
-      targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}top` : `ship-${borderModifier}left`);
-    } else if(i === shipLength - 1) {
-      // Bottom/right
-      targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}bottom` : `ship-${borderModifier}right`);
-    } else {
-      // Middle
-      targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}tb-mid` : `ship-${borderModifier}lr-mid`);
-    }
     
+    if(! hideShip) {
+      // Draw actual ship here, if it is not hidden.
+      if(i === 0) {
+        // Top/left
+        targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}top` : `ship-${borderModifier}left`);
+      } else if(i === shipLength - 1) {
+        // Bottom/right
+        targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}bottom` : `ship-${borderModifier}right`);
+      } else {
+        // Middle
+        targetDiv.classList.add(ship.orientation === 'ver' ? `ship-${borderModifier}tb-mid` : `ship-${borderModifier}lr-mid`);
+      }
+    }
+
     // Peg/hole color adjustment
     if(player.board[targetSquare]) {
       // Hit.
@@ -242,7 +253,7 @@ function renderShip(ship, player) {
       // Not shot at.
       if(ship.status === 'anchored' && ship.anchorSquare === targetSquare) {
         targetSpan.classList.add('anchor');
-      } else {
+      } else if(! hideShip) {
         targetSpan.classList.add('in-ship');
       }
     }
@@ -253,33 +264,32 @@ function renderShip(ship, player) {
 }
 
 function placeShip(e) {
-  const [player_id, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
-  if(! player_id || ! square) return undefined;
+  const [playerID, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
+  if(! playerID || ! square) return undefined;
 
-  let player = getPlayerFromPlayerID(player_id);
+  const player = players[playerID];
   let [row, col] = splitPos(square);  // 'square' is where the mouse is.
-  
+
   // One of these should exist. If not, just do nothing.
   const ship = getDeployingOrAnchoredShip(player);
   if(! ship) return undefined;
-
+  
   // If we're placing a ship that doesn't have a topLeft, it's new.
   if(! ship.topLeft) {
-    ship.topLeft = `${row}${col}`;
+    ship.topLeft = makePos(row, col);
   }
   
   if(ship.status === 'anchored') {
     let [anchorRow, anchorCol]  = splitPos(ship.anchorSquare);
-    // Adjust orientation if necessary.
-
+    
     // Change ship orientation when mouse aligns with alternate ship alignment.
     if(row === anchorRow && col !== anchorCol && ship.orientation !== 'hor') ship.orientation = 'hor';
     else if(col === anchorCol && row !== anchorRow && ship.orientation !== 'ver') ship.orientation = 'ver';
-
+    
     row = anchorRow;
     col = anchorCol;
   }
-
+  
   // Adjust ship.topLeft if ship would extend beyond board.
   if(ship.orientation === 'hor' && col + (ship.squares - 1) > boardDimensions.col.max) {
     col = boardDimensions.col.max - (ship.squares - 1);
@@ -288,8 +298,8 @@ function placeShip(e) {
     row = String.fromCharCode(boardDimensions.row.max.charCodeAt() - (ship.squares - 1));
   }
   
-  ship.topLeft = `${row}${col}`;
-
+  ship.topLeft = makePos(row, col);
+  
   render();
 }
 
@@ -299,10 +309,10 @@ function handleClick(e) {
   // If game play mode is 'place ship', handle 'place ship' logic'
   if(! turn) {
     // Get player ID and game square, or return undefined if the click wasn't on a game square.
-    const [player_id, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
-    if(! player_id || ! square) return undefined;
+    const [playerID, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
+    if(! playerID || ! square) return undefined;
 
-    const player = getPlayerFromPlayerID(player_id);
+    const player = players[playerID];
 
     const ship = getDeployingOrAnchoredShip(player);
 
@@ -315,14 +325,29 @@ function handleClick(e) {
         if(! deployNextShip(player)) {
           // No more ships to deploy; prepare to begin game.
           document.getElementById('p2-board').removeEventListener('mouseover', placeShip);
-          turn = 'p1';
+          turn = 'p2';
           console.log("BEGINNING GAME");
         }
       }
     }
-  }
+  } else if(turn === 'p2') {
+    // Player two's turn! (First handle P2, then handle P1 (computer).)
+    const [targetPlayerID, targetSquare] = getPlayerIDAndSquareFromTargetID(e.target.id);
+    if(! targetPlayerID || ! targetSquare) return undefined;
 
-  // If game play mode is 'play game', handle that here.
+    // You can't shoot at your own board!
+    if(targetPlayerID === turn) return undefined;
+
+    const targetPlayer = players[targetPlayerID];
+
+    // If square has already been hit, take no action.
+    if(targetPlayer.board[targetSquare]) return undefined;
+
+    // Update game board to indicate a shot was taken.
+    targetPlayer.board[targetSquare] = true;
+
+    // Check to see if we sunk a ship, and won the game.
+  }
 
   render();
 }
@@ -376,7 +401,7 @@ function gridAdd(pos, dir, num) {
   else if(dir === 'col') { col = parseInt(col) + num; }
   else { return undefined; }
 
-  newPos = `${row}${col}`;
+  newPos = makePos(row, col);
 
   // If not within bounds, return undefined.
   if(! withinBounds(newPos)) return undefined;
@@ -402,6 +427,11 @@ function splitPos(pos) {
   return [row, col];
 }
 
+function makePos(row, col) {
+  // Give us 'A' and '9' and we'll give you back 'A9'.
+  return `${row}${col}`;
+}
+
 function getPlayerIDAndSquareFromTargetID(id) {
   // Returns [player_id, square] or undefined.
   let player_id, square, m;
@@ -423,15 +453,6 @@ function getDeployingOrAnchoredShip(player) {
   }
 
   return undefined;
-}
-
-function getPlayerFromPlayerID(player_id) {
-  let player = undefined;
-  players.forEach(function(whichPlayer) {
-    if(whichPlayer.id === player_id) player = whichPlayer;
-  });
-
-  return player;
 }
 
 function getNextShipToDeploy(player) {
