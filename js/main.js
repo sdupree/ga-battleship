@@ -346,8 +346,13 @@ function handleClick(e) {
   // If message is popped up, clear it out.
   if(message) {
     message = '';
-    if(winner) init();
-    else render();
+    if(winner) {
+      // Reset game.
+      gameBoardEls['p2'].addEventListener('mouseover', placeShip);
+      init();
+    } else {
+      render();
+    }
     return undefined;
   }
 
@@ -397,7 +402,7 @@ function handleClick(e) {
     if(shipsSquares.every(function(sq) { return targetPlayer.board[sq]; })) {
       // WINNER!
       winner = turn;
-      message = 'You have won! Play again?';
+      message = 'You have won!<br><br>Click to start again!';
       render();
       return undefined;
     }
@@ -420,7 +425,7 @@ function handleClick(e) {
     if(p2ShipsSquares.every(function(sq) { return players['p2'].board[sq]; })) {
       // WINNER!
       winner = turn;
-      message = 'The Computer Player has won! Play again?';
+      message = 'The Computer has won!<br><br>Click to start again!';
       render();
       return undefined;
     }
@@ -431,7 +436,6 @@ function handleClick(e) {
 
   render();
 }
-
 
 function getShipSquares(ship) {
   // Returns an array of squares where a ship is sitting.
