@@ -46,10 +46,6 @@ body {
   border: 1px solid rgb(13, 0, 190);
 }
 
-/* .board-square:hover {
-  border: 2px solid #0f0;
-} */
-
 .ship-left {
   border-top: 3px #333 solid;
   border-left: 3px #333 solid;
@@ -214,18 +210,15 @@ body {
   height: 2vh;
   width: 2vh;
   border-radius: 50%;
-  /* border: 2px solid; */
   display: inline-block;
 }
 
 .white-peg {
   background-color: #fff;
-  /* border-color: #aaa; */
 }
 
 .red-peg {
   background-color: #e00;
-  /* border-color: #900; */
 }
 
 .ship {
@@ -237,8 +230,6 @@ body {
 .message {
   position: absolute;
   visibility: hidden;
-  /* float: left; */
-  /* margin: 0 auto; */
   background-color: #f7ed9c;
   width: 50vh;
   min-height: 20vh;
