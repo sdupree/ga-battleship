@@ -26,7 +26,7 @@ body {
   display: grid;
   grid-template-rows: repeat(12, 1fr);
   grid-template-columns: repeat(12, 1fr);
-  gap: 2px;
+  /* gap: 2px; */
 }
 
 .board-border-square {
@@ -43,6 +43,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  border: 1px solid rgb(13, 0, 190);
 }
 
 /* .board-square:hover {
@@ -53,12 +54,15 @@ body {
   border-top: 3px #333 solid;
   border-left: 3px #333 solid;
   border-bottom: 3px #333 solid;
+  border-right: 3px grey solid;
   background-color: grey;
 }
 
 .ship-lr-mid {
   border-top: 3px #333 solid;
   border-bottom: 3px #333 solid;
+  border-right: 3px grey solid;
+  border-left: 3px grey solid;
   background-color: grey;
 }
 
@@ -66,6 +70,7 @@ body {
   border-top: 3px #333 solid;
   border-right: 3px #333 solid;
   border-bottom: 3px #333 solid;
+  border-left: 3px grey solid;
   background-color: grey;
 }
 
@@ -73,12 +78,15 @@ body {
   border-top: 3px #333 solid;
   border-left: 3px #333 solid;
   border-right: 3px #333 solid;
+  border-bottom: 3px grey solid;
   background-color: grey;
 }
 
 .ship-tb-mid {
   border-left: 3px #333 solid;
   border-right: 3px #333 solid;
+  border-top: 3px grey solid;
+  border-bottom: 3px grey solid;
   background-color: grey;
 }
 
@@ -86,6 +94,7 @@ body {
   border-left: 3px #333 solid;
   border-right: 3px #333 solid;
   border-bottom: 3px #333 solid;
+  border-top: 3px grey solid;
   background-color: grey;
 }
 
@@ -93,12 +102,15 @@ body {
   border-top: 3px #333 dashed;
   border-left: 3px #333 dashed;
   border-bottom: 3px #333 dashed;
+  border-right: 3px grey solid;
   background-color: grey;
 }
 
 .ship-deploying-lr-mid {
   border-top: 3px #333 dashed;
   border-bottom: 3px #333 dashed;
+  border-right: 3px grey solid;
+  border-left: 3px grey solid;
   background-color: grey;
 }
 
@@ -106,6 +118,7 @@ body {
   border-top: 3px #333 dashed;
   border-right: 3px #333 dashed;
   border-bottom: 3px #333 dashed;
+  border-left: 3px grey solid;
   background-color: grey;
 }
 
@@ -113,12 +126,15 @@ body {
   border-top: 3px #333 dashed;
   border-left: 3px #333 dashed;
   border-right: 3px #333 dashed;
+  border-bottom: 3px grey solid;
   background-color: grey;
 }
 
 .ship-deploying-tb-mid {
   border-left: 3px #333 dashed;
   border-right: 3px #333 dashed;
+  border-top: 3px grey solid;
+  border-bottom: 3px grey solid;
   background-color: grey;
 }
 
@@ -126,6 +142,7 @@ body {
   border-left: 3px #333 dashed;
   border-right: 3px #333 dashed;
   border-bottom: 3px #333 dashed;
+  border-top: 3px grey solid;
   background-color: grey;
 }
 
@@ -133,12 +150,15 @@ body {
   border-top: 3px #f00 dashed;
   border-left: 3px #f00 dashed;
   border-bottom: 3px #f00 dashed;
+  border-right: 3px grey solid;
   background-color: grey;
 }
 
 .ship-collision-lr-mid {
   border-top: 3px #f00 dashed;
   border-bottom: 3px #f00 dashed;
+  border-left: 3px grey solid;
+  border-right: 3px grey solid;
   background-color: grey;
 }
 
@@ -146,6 +166,7 @@ body {
   border-top: 3px #f00 dashed;
   border-right: 3px #f00 dashed;
   border-bottom: 3px #f00 dashed;
+  border-left: 3px grey solid;
   background-color: grey;
 }
 
@@ -153,12 +174,15 @@ body {
   border-top: 3px #f00 dashed;
   border-left: 3px #f00 dashed;
   border-right: 3px #f00 dashed;
+  border-bottom: 3px grey solid;
   background-color: grey;
 }
 
 .ship-collision-tb-mid {
   border-left: 3px #f00 dashed;
   border-right: 3px #f00 dashed;
+  border-top: 3px grey solid;
+  border-bottom: 3px grey solid;
   background-color: grey;
 }
 
@@ -166,6 +190,7 @@ body {
   border-left: 3px #f00 dashed;
   border-right: 3px #f00 dashed;
   border-bottom: 3px #f00 dashed;
+  border-top: 3px grey solid;
   background-color: grey;
 }
 
