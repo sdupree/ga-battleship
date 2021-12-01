@@ -11,6 +11,7 @@ body {
   gap: 5px;
   height: 100vh;
   width: 56.25vh;
+  font-size: 2.5vh;
 }
 
 .flex-ctr {
