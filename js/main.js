@@ -148,7 +148,6 @@ function generateBoardPositions() {
       boardPositions.push(String.fromCharCode(i + 65) + (j + 1));
     }
   }
-  // return boardPositions;
 }
 
 function generateBoardHTML(player) {
