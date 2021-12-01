@@ -362,6 +362,9 @@ function handleClick(e) {
     const [playerID, square] = getPlayerIDAndSquareFromTargetID(e.target.id);
     if(! playerID || ! square) return undefined;
 
+    // Ignore all clicks that aren't on the 'p2' board (for now).
+    if(playerID !== 'p2') return undefined;
+
     const player = players[playerID];
 
     const ship = getDeployingOrAnchoredShip(player);
