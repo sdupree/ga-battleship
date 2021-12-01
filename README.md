@@ -22,6 +22,7 @@ The game will give you messages with instructions or results. Click anywhere to 
 
 ## Next Steps:
 - Refactor CSS for ships to simplify code.
+- Make boundary correction a dedicated funciton.
 - Make "game square" into a full class and encapsulate associated code, espeecially addition/subtraction.
 - Add capability for additional players and game boards.
 - Add capability for remote play.
