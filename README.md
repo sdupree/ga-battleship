@@ -21,9 +21,11 @@ How to play: Gameplay follows the classic "Battleship" board game play. First, p
 The game will give you messages with instructions or results. Click anywhere to close a message and continue game play.
 
 ## Next Steps:
+- More, better, prettier messaging.
 - Refactor CSS for ships to simplify code.
 - Make boundary correction a dedicated funciton.
 - Make "game square" into a full class and encapsulate associated code, espeecially addition/subtraction.
+- Add intelligence to computer opponent.
 - Add capability for additional players and game boards.
 - Add capability for remote play.
 - Add full graphics?
